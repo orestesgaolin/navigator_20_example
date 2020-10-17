@@ -39,7 +39,7 @@ Run on Flutter dev (1.23)
 
 [Presentation at Flutter Cracow (Sept. 17th, 2020)](https://docs.google.com/presentation/d/1d8bdw5OKnY0HmY2GqAHo17LJvRjdmy3FAxFb9DDd90o/edit?usp=sharing)
 
-[Presentation at DevFest Poland 2020]()
+[Presentation at DevFest Poland 2020](https://docs.google.com/presentation/d/1PGjm5ZMrYS5sQab3qj-nTaAe_FWNCBWi8KoMEaprlvQ/edit?usp=sharing)
 
 Special thanks to [Simon Lightfoot](https://github.com/slightfoot/) and [Andrew Coutts](https://github.com/acoutts).
 
