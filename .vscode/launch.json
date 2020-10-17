@@ -11,8 +11,14 @@
             "type": "dart"
         },
         {
-            "name": "Flutter add two pages",
-            "program": "lib/main_add_two_pages.dart",
+            "name": "Flutter Router",
+            "program": "lib/main_router.dart",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "Flutter setState",
+            "program": "lib/main_set_state.dart",
             "request": "launch",
             "type": "dart"
         },
