@@ -2,6 +2,13 @@
 
 Navigator 2.0 Pages API example and Router example.
 
+The main point of these examples is to show how to extract basic navigation logic to separate class (e.g. ChangeNotifier). I'm using 2 approaches:
+
+- Pages API
+- Router widget
+
+Both of them use separate `PageManager` (or `RoutePageManager`) to handle navigation stack.
+
 ## Pages API
 
 Navigator's Pages API is a convenient way to declaratively set navigation stack in your Flutter app. Take a look at the `main.dart` entry point and please notice custom `PageManager` class that is handling list of pages provided to `Navigator`.
@@ -36,4 +43,4 @@ Run on Flutter dev (1.23)
 
 Special thanks to [Simon Lightfoot](https://github.com/slightfoot/) and [Andrew Coutts](https://github.com/acoutts).
 
-See more also in the [Stocks app example using Router](https://github.com/flutter/flutter/pull/63424)
+See more also in the [Stocks app example using Router](https://github.com/flutter/flutter/pull/63424).
