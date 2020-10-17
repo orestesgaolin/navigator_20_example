@@ -37,6 +37,12 @@ class TheApp extends StatelessWidget {
 /// builds.
 class TheAppRouterDelegate extends RouterDelegate<TheAppPath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<TheAppPath> {
+  TheAppRouterDelegate() {
+    // This part is important because we pass the notification
+    // from RoutePageManager to RouterDelegate. This way our navigation
+    // changes (e.g. pushes) will be reflected in the address bar
+    pageManager.addListener(notifyListeners);
+  }
   final RoutePageManager pageManager = RoutePageManager();
 
   /// In the build method we need to return Navigator using [navigatorKey]
@@ -72,6 +78,9 @@ class TheAppRouterDelegate extends RouterDelegate<TheAppPath>
   GlobalKey<NavigatorState> get navigatorKey => pageManager.navigatorKey;
 
   @override
+  TheAppPath get currentConfiguration => pageManager.currentPath;
+
+  @override
   Future<void> setNewRoutePath(TheAppPath configuration) async {
     await pageManager.setNewRoutePath(configuration);
   }
@@ -86,28 +95,43 @@ class RoutePageManager extends ChangeNotifier {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   final List<Page> _pages = [
-    MaterialPage(
-      child: MainScreen(),
-      key: const Key('MainScreen'),
-    ),
+    MaterialPage(child: MainScreen(), key: const Key('MainScreen'), name: '/'),
   ];
+
+  TheAppPath get currentPath {
+    return parseRoute(Uri.parse(_pages.last.name));
+  }
 
   void didPop(Page page) {
     _pages.remove(page);
+    notifyListeners();
   }
 
   /// This is where we handle new route information and manage the pages list
   Future<void> setNewRoutePath(TheAppPath configuration) async {
     if (configuration.isUnknown) {
       // Handling 404
-      _pages.add(MaterialPage(child: UnknownScreen(), key: UniqueKey()));
+      _pages.add(
+        MaterialPage(
+          child: UnknownScreen(),
+          key: UniqueKey(),
+          name: '/404',
+        ),
+      );
     } else if (configuration.isDetailsPage) {
       // Handling details screens
-      _pages.add(MaterialPage(
-          child: DetailsScreen(id: configuration.id), key: UniqueKey()));
+      _pages.add(
+        MaterialPage(
+          child: DetailsScreen(id: configuration.id),
+          key: UniqueKey(),
+          name: '/details/${configuration.id}',
+        ),
+      );
     } else if (configuration.isHomePage) {
       // Restoring to MainScreen
-      _pages.removeWhere((element) => element.key != const Key('MainScreen'));
+      _pages.removeWhere(
+        (element) => element.key != const Key('MainScreen'),
+      );
     }
     notifyListeners();
     return;
@@ -124,10 +148,33 @@ class RoutePageManager extends ChangeNotifier {
   void addDetailsBelow() {
     _pages.insert(
       _pages.length - 1,
-      MaterialPage(child: DetailsScreen(id: _pages.length), key: UniqueKey()),
+      MaterialPage(
+        child: DetailsScreen(id: _pages.length),
+        key: UniqueKey(),
+        name: '/details/${_pages.length}',
+      ),
     );
     notifyListeners();
   }
+}
+
+TheAppPath parseRoute(Uri uri) {
+  // Handle '/'
+  if (uri.pathSegments.isEmpty) {
+    return TheAppPath.home();
+  }
+
+  // Handle '/details/:id'
+  if (uri.pathSegments.length == 2) {
+    if (uri.pathSegments[0] != 'details') return TheAppPath.unknown();
+    var remaining = uri.pathSegments[1];
+    var id = int.tryParse(remaining);
+    if (id == null) return TheAppPath.unknown();
+    return TheAppPath.details(id);
+  }
+
+  // Handle unknown routes
+  return TheAppPath.unknown();
 }
 
 /// Parser inspired by https://github.com/acoutts/flutter_nav_2.0_mobx/blob/master/lib/main.dart
@@ -138,25 +185,9 @@ class TheAppRouteInformationParser extends RouteInformationParser<TheAppPath> {
   Future<TheAppPath> parseRouteInformation(
       RouteInformation routeInformation) async {
     final uri = Uri.parse(routeInformation.location);
-    // Handle '/'
-    if (uri.pathSegments.isEmpty) {
-      return TheAppPath.home();
-    }
-
-    // Handle '/details/:id'
-    if (uri.pathSegments.length == 2) {
-      if (uri.pathSegments[0] != 'details') return TheAppPath.unknown();
-      var remaining = uri.pathSegments[1];
-      var id = int.tryParse(remaining);
-      if (id == null) return TheAppPath.unknown();
-      return TheAppPath.details(id);
-    }
-
-    // Handle unknown routes
-    return TheAppPath.unknown();
+    return parseRoute(uri);
   }
 
-  /// This method is valuable when using in Flutter web
   @override
   RouteInformation restoreRouteInformation(TheAppPath path) {
     if (path.isUnknown) {

@@ -14,6 +14,18 @@ For more complex and robust needs you may use the Router widget. Simple implemen
 
 ![](docs/router.gif)
 
+### Web address handling
+
+Because the `RoutePageManager` is notifying the `Router` about its changes and the `currentPath` is used as `currentConfiguration` the address bar in the browser is reflecting the stack changes:
+
+```dart
+  @override
+  TheAppPath get currentConfiguration => pageManager.currentPath;
+```
+
+![](docs/web.gif)
+
+
 # More
 
 Run on Flutter dev (1.23)
