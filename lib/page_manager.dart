@@ -1,48 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:navigator_example/screens/other_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'custom_page.dart';
-import 'pages.dart';
+import 'navigator20/details_screen.dart';
+import 'main_screen.dart';
 
 class PageManager extends ChangeNotifier {
-  bool isNavigator2 = true;
-
   /// it's important to provide new list for Navigator each time
   /// because it compares previous list with the next one on each [NavigatorState didUpdateWidget]
   List<Page> get pages => List.unmodifiable(_pages);
   final List<Page> _pages = [
-    CustomPage(
-      builder: (_) => MainPage(),
+    MaterialPage(
+      child: MainScreen(),
       key: Key('MainPage'),
     ),
   ];
+
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   static PageManager of(BuildContext context) {
     return Provider.of<PageManager>(context, listen: false);
   }
 
-  void switchNavigatorVersion() {
-    isNavigator2 = !isNavigator2;
-    notifyListeners();
-  }
-
   void openDetails() {
     _pages.add(
-      CustomPage(
-        builder: (_) => DetailsPage(),
-        key: Key('DetailsPage'),
+      MaterialPage(
+        child: DetailsScreen(),
+        key: DetailsScreen.pageKey,
       ),
     );
     notifyListeners();
   }
 
-  void addOtherPageBeneath() {
+  void addOtherPageBeneath({Widget child}) {
+    final inserted = child != null
+        ? MaterialPage(child: child, key: UniqueKey())
+        : MaterialPage(
+            child: OtherScreen(),
+            key: Key('OtherPage${_pages.length - 1}'),
+          );
     _pages.insert(
       _pages.length - 1,
-      CustomPage(
-        builder: (_) => OtherPage(),
-        key: Key('OtherPage${_pages.length - 1}'),
-      ),
+      inserted,
     );
     notifyListeners();
   }
@@ -50,13 +51,14 @@ class PageManager extends ChangeNotifier {
   void pushTwoPages() {
     _pages.addAll(
       [
+        // You can also use CustomPage instead of MaterialPage
         CustomPage(
-          builder: (_) => OtherPage(),
-          key: Key('OtherPage'),
+          builder: (_) => OtherScreen(),
+          key: UniqueKey(),
         ),
         CustomPage(
-          builder: (_) => DetailsPage(),
-          key: Key('DetailsPage'),
+          builder: (_) => DetailsScreen(),
+          key: DetailsScreen.pageKey,
         ),
       ],
     );
@@ -68,12 +70,20 @@ class PageManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void replaceTopWithOther() {
+  bool isRootPage(Key key) {
+    final value = _pages.elementAt(0).key == key;
+    if (value) {
+      notifyListeners();
+    }
+    return value;
+  }
+
+  void replaceTopWith(Widget child) {
     _pages.removeAt(_pages.length - 1);
     _pages.add(
-      CustomPage(
-        builder: (_) => OtherPage(),
-        key: Key('OtherPage'),
+      MaterialPage(
+        child: child,
+        key: UniqueKey(),
       ),
     );
     notifyListeners();

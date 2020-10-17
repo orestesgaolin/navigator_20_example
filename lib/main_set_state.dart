@@ -1,3 +1,4 @@
+// ignore_for_file: omit_local_variable_types
 import 'package:flutter/material.dart';
 
 void main() {
@@ -10,39 +11,43 @@ class TheApp extends StatefulWidget {
 }
 
 class _TheAppState extends State<TheApp> {
-  final pages = <Page>[
-    MyCustomPage(
-      builder: (_) => HomePage(),
-      key: const Key('HomePage'),
-    ),
-    MyCustomPage(
-      builder: (_) => SecondLevelPage(),
-      key: const Key('SecondLevelPage'),
-    ),
-    MyCustomPage(
-      builder: (_) => ThirdLevelPage(),
-      key: const Key('ThirdLevelPage'),
-    ),
-  ];
+  final pages = <Page>[];
+  final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    pages.addAll([
+    pages.add(
       MyCustomPage(
-        builder: (_) => SecondLevelPage(
-          goToThirdLevel: goToThirdLevel,
+        builder: (_) => HomePage(
+          onAddPage: () {
+            pages.add(
+              MyCustomPage(
+                builder: (_) => DetailsPage(),
+                key: const Key('DetailsPage'),
+              ),
+            );
+            setState(() {});
+          },
         ),
-        key: const Key('SecondLevelPage'),
+        key: const Key('HomePage'),
       ),
-      MyCustomPage(
-        builder: (_) => ThirdLevelPage(
-          removeSecondLevel: removeSecondLevel,
-          removeHomePage: removeHomePage,
-        ),
-        key: const Key('ThirdLevelPage'),
-      ),
-    ]);
+    );
+    // pages.addAll([
+    //   MyCustomPage(
+    //     builder: (_) => SecondLevelPage(
+    //       goToThirdLevel: goToThirdLevel,
+    //     ),
+    //     key: const Key('SecondLevelPage'),
+    //   ),
+    //   MyCustomPage(
+    //     builder: (_) => ThirdLevelPage(
+    //       removeSecondLevel: removeSecondLevel,
+    //       removeHomePage: removeHomePage,
+    //     ),
+    //     key: const Key('ThirdLevelPage'),
+    //   ),
+    // ]);
   }
 
   @override
@@ -53,34 +58,46 @@ class _TheAppState extends State<TheApp> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Navigator(
-        pages: List.unmodifiable(pages),
-        onPopPage: _onPopPage,
-        // transitionDelegate: MyTransitionDelegate(),
+      // navigatorKey: _navigatorKey,
+      // onGenerateRoute: (_) => null,
+      // builder: (context, child) {
+      //   return Navigator(
+      //     key: _navigatorKey,
+      //     pages: List.of(pages),
+      //     onPopPage: _onPopPage,
+      //   );
+      // },
+      home: WillPopScope(
+        onWillPop: () async => !await _navigatorKey.currentState.maybePop(),
+        child: Navigator(
+          key: _navigatorKey,
+          pages: List.of(pages),
+          onPopPage: _onPopPage,
+        ),
       ),
     );
   }
 
-  void removeSecondLevel() {
-    pages.removeAt(pages.length - 2);
-    setState(() {});
-  }
+  // void removeSecondLevel() {
+  //   pages.removeAt(pages.length - 2);
+  //   setState(() {});
+  // }
 
-  void removeHomePage() {
-    pages.removeAt(0);
-    setState(() {});
-  }
+  // void removeHomePage() {
+  //   pages.removeAt(0);
+  //   setState(() {});
+  // }
 
-  void goToThirdLevel() {
-    pages.add(MyCustomPage(
-      builder: (_) => ThirdLevelPage(
-        removeSecondLevel: removeSecondLevel,
-        removeHomePage: removeHomePage,
-      ),
-      key: const Key('ThirdLevelPage'),
-    ));
-    setState(() {});
-  }
+  // void goToThirdLevel() {
+  //   pages.add(MyCustomPage(
+  //     builder: (_) => ThirdLevelPage(
+  //       removeSecondLevel: removeSecondLevel,
+  //       removeHomePage: removeHomePage,
+  //     ),
+  //     key: const Key('ThirdLevelPage'),
+  //   ));
+  //   setState(() {});
+  // }
 
   bool _onPopPage(Route<dynamic> route, dynamic result) {
     pages.remove(route.settings);
@@ -136,12 +153,37 @@ class MyCustomPage<T> extends Page<T> {
 }
 
 class HomePage extends StatelessWidget {
+  const HomePage({Key key, this.onAddPage}) : super(key: key);
+
+  final VoidCallback onAddPage;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('HomePage'),
       ),
+      body: TextButton(
+        child: Text('Add page'),
+        onPressed: onAddPage,
+      ),
+    );
+  }
+}
+
+class DetailsPage extends StatelessWidget {
+  const DetailsPage({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Details Page'),
+        backgroundColor: Colors.red,
+      ),
+      body: Center(child: Text('Details Page')),
     );
   }
 }

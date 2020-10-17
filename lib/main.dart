@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'custom_transition_delegate.dart';
+import 'transition_delegates/custom_transition_delegate.dart';
 import 'page_manager.dart';
-import 'pages.dart';
 
 void main() {
   final pageManager = PageManager();
@@ -26,21 +25,27 @@ class TheApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: NavigatorPage(),
+        home: MainNavigatorPage(),
       ),
     );
   }
 }
 
-class NavigatorPage extends StatelessWidget {
+class MainNavigatorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<PageManager>(
       // using provider here, but it could be bloc,
       // setState or any other way to notify about the changes
       builder: (context, pageManager, _) {
-        if (pageManager.isNavigator2) {
-          return Navigator(
+        // This is required to handle back button on Android
+        // The same navigator key must be used to check WillPopScope's condition
+        // and provided to Navigator widget
+        return WillPopScope(
+          onWillPop: () async =>
+              !await pageManager.navigatorKey.currentState.maybePop(),
+          child: Navigator(
+            key: pageManager.navigatorKey,
             pages: pageManager.pages,
             onPopPage: (route, result) =>
                 _onPopPage(route, result, pageManager),
@@ -50,10 +55,8 @@ class NavigatorPage extends StatelessWidget {
             ///
             /// Note that it's not specifying the animation itself
             transitionDelegate: const CustomTransitionDelegate(),
-          );
-        } else {
-          return MainPage(isNavigator2: false);
-        }
+          ),
+        );
       },
     );
   }

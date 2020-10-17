@@ -1,3 +1,4 @@
+// ignore_for_file: omit_local_variable_types
 import 'package:flutter/material.dart';
 
 class NoAnimationTransitionDelegate extends TransitionDelegate<void> {
