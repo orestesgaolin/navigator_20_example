@@ -100,10 +100,11 @@ class RoutePageManager extends ChangeNotifier {
   Future<void> setNewRoutePath(TheAppPath configuration) async {
     if (configuration.isUnknown) {
       // Handling 404
-      _pages.add(MaterialPage(child: UnknownScreen()));
+      _pages.add(MaterialPage(child: UnknownScreen(), key: UniqueKey()));
     } else if (configuration.isDetailsPage) {
       // Handling details screens
-      _pages.add(MaterialPage(child: DetailsScreen(id: configuration.id)));
+      _pages.add(MaterialPage(
+          child: DetailsScreen(id: configuration.id), key: UniqueKey()));
     } else if (configuration.isHomePage) {
       // Restoring to MainScreen
       _pages.removeWhere((element) => element.key != const Key('MainScreen'));
@@ -123,7 +124,7 @@ class RoutePageManager extends ChangeNotifier {
   void addDetailsBelow() {
     _pages.insert(
       _pages.length - 1,
-      MaterialPage(child: DetailsScreen(id: _pages.length)),
+      MaterialPage(child: DetailsScreen(id: _pages.length), key: UniqueKey()),
     );
     notifyListeners();
   }
