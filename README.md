@@ -1,4 +1,6 @@
-# navigator_example
+# Navigator 2.0 examples
+
+[Web demo](https://navigator_20_example.codemagic.app/#/) of Router usage.
 
 Navigator 2.0 Pages API example and Router example.
 
