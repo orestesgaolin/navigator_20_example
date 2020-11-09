@@ -108,9 +108,7 @@ class PageManager extends ChangeNotifier {
 
   bool isRootPage(Key key) {
     final value = _pages.elementAt(0).key == key;
-    if (value) {
-      notifyListeners();
-    }
+
     return value;
   }
 
