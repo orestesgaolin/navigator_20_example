@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:navigator_example/main_screen.dart';
 import 'package:navigator_example/page_manager.dart';
-import 'package:navigator_example/screens/other_screen.dart';
-import 'package:provider/provider.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({Key key}) : super(key: key);
