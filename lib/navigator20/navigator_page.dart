@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:navigator_example/page_manager.dart';
 
-class Navigator20Screen extends StatelessWidget {
+class Navigator20Screen extends StatefulWidget {
+  @override
+  _Navigator20ScreenState createState() => _Navigator20ScreenState();
+}
+
+class _Navigator20ScreenState extends State<Navigator20Screen> {
+  bool result;
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -22,7 +29,22 @@ class Navigator20Screen extends StatelessWidget {
           Text(
             'Note no redundant (double) animations when opening 2 pages at once',
             textAlign: TextAlign.center,
-          )
+          ),
+          Gap(10),
+          RaisedButton(
+            onPressed: () async {
+              setState(() {
+                this.result = null;
+              });
+              final result = await PageManager.of(context).waitForResult();
+              print(result);
+              setState(() {
+                this.result = result;
+              });
+            },
+            child: Text('Push and await result'),
+          ),
+          if (result != null) Text('Pop result: $result')
         ],
       ),
     );

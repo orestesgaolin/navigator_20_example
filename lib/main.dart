@@ -66,6 +66,7 @@ class MainNavigatorPage extends StatelessWidget {
   bool _onPopPage(
       Route<dynamic> route, dynamic result, PageManager pageManager) {
     pageManager.didPop(route.settings);
+    pageManager.setResult(result);
     return route.didPop(result);
   }
 }

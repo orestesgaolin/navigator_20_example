@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:navigator_example/screens/other_screen.dart';
 import 'package:provider/provider.dart';
@@ -5,11 +7,13 @@ import 'package:provider/provider.dart';
 import 'custom_page.dart';
 import 'navigator20/details_screen.dart';
 import 'main_screen.dart';
+import 'navigator20/result_screen.dart';
 
 class PageManager extends ChangeNotifier {
   /// it's important to provide new list for Navigator each time
   /// because it compares previous list with the next one on each [NavigatorState didUpdateWidget]
   List<Page> get pages => List.unmodifiable(_pages);
+  Completer _resultCompleter;
   final List<Page> _pages = [
     MaterialPage(
       child: MainScreen(),
@@ -32,6 +36,26 @@ class PageManager extends ChangeNotifier {
       ),
     );
     notifyListeners();
+  }
+
+  Future<bool> waitForResult() async {
+    _resultCompleter = Completer<bool>();
+    _pages.add(
+      MaterialPage(
+        child: ResultScreen(),
+        key: ResultScreen.pageKey,
+      ),
+    );
+    notifyListeners();
+    return _resultCompleter.future;
+  }
+
+  void returnWith(bool value) {
+    if (_resultCompleter != null) {
+      _pages.removeLast();
+      _resultCompleter.complete(value);
+      notifyListeners();
+    }
   }
 
   void addOtherPageBeneath({Widget child}) {
@@ -89,7 +113,19 @@ class PageManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setResult(dynamic result) {
+    if (result is bool && result != null && _resultCompleter != null) {
+      _resultCompleter.complete(result);
+    }
+  }
+
   void didPop(Page page) {
     _pages.remove(page);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _resultCompleter?.complete();
   }
 }
