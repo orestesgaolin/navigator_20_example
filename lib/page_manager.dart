@@ -38,6 +38,15 @@ class PageManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Simple method to use instead of `await Navigator.push(context, ...)`
+  ///
+  /// This way you can handle pushing pages that are
+  /// expetected to return some value.
+  ///
+  /// Here I'm using single completer to wait for the result.
+  ///
+  /// The result can be set either by [returnWith] or by popping the page
+  /// as you would normally do with old Navigator ([didPop] and [_setResult]).
   Future<bool> waitForResult() async {
     _resultCompleter = Completer<bool>();
     _pages.add(
@@ -50,6 +59,9 @@ class PageManager extends ChangeNotifier {
     return _resultCompleter.future;
   }
 
+  /// This is custom method to pass returning value
+  /// while popping the page. It can be considered as an example
+  /// alternative to returning value with `Navigator.pop(context, value)`.
   void returnWith(bool value) {
     if (_resultCompleter != null) {
       _pages.removeLast();
@@ -113,14 +125,17 @@ class PageManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setResult(dynamic result) {
-    if (result is bool && result != null && _resultCompleter != null) {
+  void _setResult(dynamic result) {
+    if (result is bool && _resultCompleter != null) {
       _resultCompleter.complete(result);
     }
   }
 
-  void didPop(Page page) {
+  void didPop(Page page, dynamic result) {
     _pages.remove(page);
+    if (result != null) {
+      _setResult(result);
+    }
   }
 
   @override

@@ -65,8 +65,7 @@ class MainNavigatorPage extends StatelessWidget {
   /// to properly clean up `pages` list if a page has been popped.
   bool _onPopPage(
       Route<dynamic> route, dynamic result, PageManager pageManager) {
-    pageManager.didPop(route.settings);
-    pageManager.setResult(result);
+    pageManager.didPop(route.settings, result);
     return route.didPop(result);
   }
 }
