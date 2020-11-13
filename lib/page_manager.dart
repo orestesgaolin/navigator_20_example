@@ -18,6 +18,7 @@ class PageManager extends ChangeNotifier {
     MaterialPage(
       child: MainScreen(),
       key: Key('MainPage'),
+      name: 'MainScreen',
     ),
   ];
 
@@ -39,6 +40,7 @@ class PageManager extends ChangeNotifier {
       MaterialPage(
         child: DetailsScreen(),
         key: DetailsScreen.pageKey,
+        name: 'DetailsScreen',
       ),
     );
     notifyListeners();
@@ -59,6 +61,7 @@ class PageManager extends ChangeNotifier {
       ResultablePage(
         child: ResultScreen(),
         key: ResultScreen.pageKey,
+        name: 'ResultScreen',
       ),
     );
     notifyListeners();
@@ -78,10 +81,15 @@ class PageManager extends ChangeNotifier {
 
   void addOtherPageBeneath({Widget child}) {
     final inserted = child != null
-        ? MaterialPage(child: child, key: UniqueKey())
+        ? MaterialPage(
+            child: child,
+            key: UniqueKey(),
+            name: '${child.runtimeType}',
+          )
         : MaterialPage(
             child: OtherScreen(),
             key: Key('OtherPage${_pages.length - 1}'),
+            name: 'OtherScreen',
           );
     _pages.insert(
       _pages.length - 1,
@@ -97,10 +105,12 @@ class PageManager extends ChangeNotifier {
         CustomPage(
           builder: (_) => OtherScreen(),
           key: UniqueKey(),
+          name: 'OtherScreen',
         ),
         CustomPage(
           builder: (_) => DetailsScreen(),
           key: DetailsScreen.pageKey,
+          name: 'DetailsScreen',
         ),
       ],
     );
@@ -124,6 +134,7 @@ class PageManager extends ChangeNotifier {
       MaterialPage(
         child: child,
         key: UniqueKey(),
+        name: '${child.runtimeType}',
       ),
     );
     notifyListeners();
@@ -143,6 +154,7 @@ class PageManager extends ChangeNotifier {
     if (page is ResultablePage) {
       _setResult(result);
     }
+    notifyListeners();
   }
 
   @override
