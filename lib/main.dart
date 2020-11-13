@@ -25,7 +25,40 @@ class TheApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: MainNavigatorPage(),
+        home: Stack(
+          children: [
+            MainNavigatorPage(),
+            _NavStateLabel(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavStateLabel extends StatelessWidget {
+  const _NavStateLabel({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topRight,
+      child: Consumer<PageManager>(
+        builder: (context, pageManager, _) {
+          return Material(
+            elevation: 2,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child:
+                    Text(pageManager.pages.map((e) => '${e.name}').join('/')),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

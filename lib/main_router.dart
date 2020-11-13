@@ -91,11 +91,16 @@ class RoutePageManager extends ChangeNotifier {
     return Provider.of<RoutePageManager>(context, listen: false);
   }
 
+  /// Here we are storing the current list of pages
   List<Page> get pages => List.unmodifiable(_pages);
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   final List<Page> _pages = [
-    MaterialPage(child: MainScreen(), key: const Key('MainScreen'), name: '/'),
+    MaterialPage(
+      child: MainScreen(),
+      key: const Key('MainScreen'),
+      name: '/',
+    ),
   ];
 
   TheAppPath get currentPath {
