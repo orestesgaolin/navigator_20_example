@@ -27,8 +27,9 @@ class _Navigator20ScreenState extends State<Navigator20Screen> {
           ),
           Gap(10),
           Text(
-            'Note no redundant (double) animations when opening 2 pages at once',
+            'Note no redundant (double) animations\nwhen opening 2 pages at once',
             textAlign: TextAlign.center,
+            style: TextStyle(fontStyle: FontStyle.italic),
           ),
           Gap(10),
           RaisedButton(
@@ -42,9 +43,15 @@ class _Navigator20ScreenState extends State<Navigator20Screen> {
                 this.result = result;
               });
             },
-            child: Text('Push and await result'),
+            child: Text(
+              'Push and await result',
+            ),
           ),
-          if (result != null) Text('Pop result: $result')
+          if (result != null)
+            Text(
+              'Pop result: $result',
+              style: Theme.of(context).textTheme.headline5,
+            )
         ],
       ),
     );
