@@ -18,13 +18,15 @@ class _TheAppState extends State<TheApp> {
   void initState() {
     super.initState();
     pages.add(
-      MyCustomPage(
-        builder: (_) => HomePage(
+      MaterialPage(
+        child: HomePage(
           onAddPage: () {
             pages.add(
-              MyCustomPage(
-                builder: (_) => DetailsPage(),
-                key: const Key('DetailsPage'),
+              DetailsPage.page(
+                onAddPage: () {
+                  pages.add(InnerApp.page());
+                  setState(() {});
+                },
               ),
             );
             setState(() {});
@@ -33,21 +35,6 @@ class _TheAppState extends State<TheApp> {
         key: const Key('HomePage'),
       ),
     );
-    // pages.addAll([
-    //   MyCustomPage(
-    //     builder: (_) => SecondLevelPage(
-    //       goToThirdLevel: goToThirdLevel,
-    //     ),
-    //     key: const Key('SecondLevelPage'),
-    //   ),
-    //   MyCustomPage(
-    //     builder: (_) => ThirdLevelPage(
-    //       removeSecondLevel: removeSecondLevel,
-    //       removeHomePage: removeHomePage,
-    //     ),
-    //     key: const Key('ThirdLevelPage'),
-    //   ),
-    // ]);
   }
 
   @override
@@ -100,55 +87,11 @@ class _TheAppState extends State<TheApp> {
   // }
 
   bool _onPopPage(Route<dynamic> route, dynamic result) {
-    pages.remove(route.settings);
-    return route.didPop(result);
-  }
-}
-
-/// {@template myCustomPage}
-/// Custom implementation of [Page]
-///
-/// To create new page wrap it with [MyCustomPage].
-///
-/// {@tool snippet}
-///
-/// Typical usage is as follows:
-///
-/// ```dart
-/// MyCustomPage(
-///    builder: (_) => HomePage(),
-///    key: const Key('HomePage'),
-/// ),
-/// ```
-/// {@end-tool}
-/// {@endtemplate}
-class MyCustomPage<T> extends Page<T> {
-  /// {@macro myCustomPage}
-  const MyCustomPage({
-    @required this.builder,
-    String name,
-    Key key,
-  }) : super(key: key, name: name);
-  final WidgetBuilder builder;
-
-  @override
-  Route<T> createRoute(BuildContext context) {
-    return MaterialPageRoute(
-      settings: this,
-      builder: builder,
-    );
-  }
-
-  @override
-  int get hashCode => key.hashCode;
-
-  @override
-  bool operator ==(Object other) {
-    if (other is Page) {
-      return key == other.key;
-    } else {
-      return super == other;
+    final didPop = route.didPop(result);
+    if (didPop == true) {
+      pages.remove(route.settings);
     }
+    return didPop;
   }
 }
 
@@ -172,9 +115,17 @@ class HomePage extends StatelessWidget {
 }
 
 class DetailsPage extends StatelessWidget {
+  static Page page({VoidCallback onAddPage}) => MaterialPage(
+        child: DetailsPage(onAddPage: onAddPage),
+        key: const Key('DetailsPage'),
+      );
+
   const DetailsPage({
     Key key,
+    this.onAddPage,
   }) : super(key: key);
+
+  final VoidCallback onAddPage;
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +134,17 @@ class DetailsPage extends StatelessWidget {
         title: Text('Details Page'),
         backgroundColor: Colors.red,
       ),
-      body: Center(child: Text('Details Page')),
+      body: Column(
+        children: [
+          Center(
+            child: Text('Details Page'),
+          ),
+          TextButton(
+            child: Text('Add Inner Navigator'),
+            onPressed: onAddPage,
+          )
+        ],
+      ),
     );
   }
 }
@@ -202,7 +163,7 @@ class SecondLevelPage extends StatelessWidget {
       body: Center(
         child: FlatButton(
           onPressed: goToThirdLevel,
-          child: Text('Go to 3.'),
+          child: Text('Go to 3rd.'),
         ),
       ),
     );
@@ -262,70 +223,92 @@ class _ThirdLevelPageState extends State<ThirdLevelPage> {
   }
 }
 
-class NoAnimationTransitionDelegate extends TransitionDelegate<void> {
+class InnerApp extends StatefulWidget {
+  static Page page() =>
+      MaterialPage(child: InnerApp(), key: const Key('InnerApp'));
+
   @override
-  Iterable<RouteTransitionRecord> resolve({
-    List<RouteTransitionRecord> newPageRouteHistory,
-    Map<RouteTransitionRecord, RouteTransitionRecord>
-        locationToExitingPageRoute,
-    Map<RouteTransitionRecord, List<RouteTransitionRecord>>
-        pageRouteToPagelessRoutes,
-  }) {
-    final List<RouteTransitionRecord> results = <RouteTransitionRecord>[];
-    // This method will handle the exiting route and its corresponding pageless
-    // route at this location. It will also recursively check if there is any
-    // other exiting routes above it and handle them accordingly.
-    void handleExitingRoute(RouteTransitionRecord location, bool isLast) {
-      final RouteTransitionRecord exitingPageRoute =
-          locationToExitingPageRoute[location];
-      if (exitingPageRoute == null) return;
-      if (exitingPageRoute.isWaitingForExitingDecision) {
-        final bool hasPagelessRoute =
-            pageRouteToPagelessRoutes.containsKey(exitingPageRoute);
-        final bool isLastExitingPageRoute =
-            isLast && !locationToExitingPageRoute.containsKey(exitingPageRoute);
-        if (isLastExitingPageRoute && !hasPagelessRoute) {
-          exitingPageRoute.markForPop(exitingPageRoute.route.currentResult);
-        } else {
-          exitingPageRoute
-              .markForComplete(exitingPageRoute.route.currentResult);
-        }
-        if (hasPagelessRoute) {
-          final List<RouteTransitionRecord> pagelessRoutes =
-              pageRouteToPagelessRoutes[exitingPageRoute];
-          for (final RouteTransitionRecord pagelessRoute in pagelessRoutes) {
-            assert(pagelessRoute.isWaitingForExitingDecision);
-            if (isLastExitingPageRoute &&
-                pagelessRoute == pagelessRoutes.last) {
-              pagelessRoute.markForPop(pagelessRoute.route.currentResult);
-            } else {
-              pagelessRoute.markForComplete(pagelessRoute.route.currentResult);
-            }
-          }
-        }
-      }
-      results.add(exitingPageRoute);
+  _InnerAppState createState() => _InnerAppState();
+}
 
-      // It is possible there is another exiting route above this exitingPageRoute.
-      handleExitingRoute(exitingPageRoute, isLast);
+class _InnerAppState extends State<InnerApp> {
+  final pages = <Page>[];
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    pages.add(
+      MaterialPage(
+        child: InnerHomePage(
+          onAddPage: () {
+            pages.add(
+              MaterialPage(
+                child: InnerDetailsPage(),
+                key: const Key('InnerDetailsPage'),
+              ),
+            );
+            setState(() {});
+          },
+        ),
+        key: const Key('InnerHomePage'),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async => !await _navigatorKey.currentState.maybePop(),
+      child: Navigator(
+        key: _navigatorKey,
+        pages: List.of(pages),
+        onPopPage: _onPopPage,
+      ),
+    );
+  }
+
+  bool _onPopPage(Route<dynamic> route, dynamic result) {
+    final didPop = route.didPop(result);
+    if (didPop == true) {
+      pages.remove(route.settings);
     }
+    return didPop;
+  }
+}
 
-    // Handles exiting route in the beginning of list.
-    handleExitingRoute(null, newPageRouteHistory.isEmpty);
+class InnerHomePage extends StatelessWidget {
+  const InnerHomePage({Key key, this.onAddPage}) : super(key: key);
 
-    for (final RouteTransitionRecord pageRoute in newPageRouteHistory) {
-      final bool isLastIteration = newPageRouteHistory.last == pageRoute;
-      if (pageRoute.isWaitingForEnteringDecision) {
-        if (!locationToExitingPageRoute.containsKey(pageRoute) &&
-            isLastIteration) {
-          pageRoute.markForPush();
-        } else {
-          pageRoute.markForAdd();
-        }
-      }
-      results.add(pageRoute);
-      handleExitingRoute(pageRoute, isLastIteration);
-    }
-    return results;
+  final VoidCallback onAddPage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Inner Home Page'),
+      ),
+      body: TextButton(
+        child: Text('Add page'),
+        onPressed: onAddPage,
+      ),
+    );
+  }
+}
+
+class InnerDetailsPage extends StatelessWidget {
+  const InnerDetailsPage({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Inner Details Page'),
+        backgroundColor: Colors.blue,
+      ),
+      body: Center(child: Text('Inner Details Page')),
+    );
   }
 }
